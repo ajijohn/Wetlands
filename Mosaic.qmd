@@ -1,0 +1,54 @@
+---
+title: "Mosaic"
+format: html
+editor: visual
+---
+
+## Introduction
+
+Preparing the test data
+
+## Running Code
+
+
+```{r}
+library(terra)
+library(ggplot2)
+library(purrr)
+```
+
+Get all the files and mosaic
+
+```{r}
+# Load the terra package
+
+# Set the directory containing your GeoTIFFs
+#setwd("./data/")
+
+# List all GeoTIFF files in the directory
+tif_files <- list.files(path = "./data",pattern = "\\.tif$", full.names = TRUE)
+
+# Initialize an empty SpatRaster collection
+rasters <- NULL
+
+
+# Read all the GeoTIFFs as a list of SpatRaster objects
+rasters <- lapply(tif_files, rast)
+
+# Mosaic the rasters; specify the function for overlapping areas (e.g., "mean", "min", "max")
+mosaic_raster <- do.call(mosaic, c(rasters, fun = "mean"))
+
+
+# Assuming mosaic_raster is a SpatRaster with RGB layers
+# Scale each band to the range [0, 1]
+mosaic_raster <- clamp(mosaic_raster, lower = 0, upper = 255) # Ensure values are within [0, 255]
+mosaic_raster <- mosaic_raster / 255                           # Scale values to [0, 1]
+
+# Plot the RGB raster
+plotRGB(mosaic_raster)
+
+# Optionally, save the mosaic to a new GeoTIFF
+writeRaster(mosaic_raster, "./data/combined/mosaic_output.tif", overwrite = TRUE)
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
